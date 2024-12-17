@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form</title>
+</head>
+<body>
+  <form th:action="@{/product/save(id=${product.id})}" th:object="${product}" method="post">
+    <input id="name" type="text" placeholder="Name" th:field="${product.name}">
+    <br>
+    <input id="price" type="number" placeholder="Price" th:field="${product.price}">
+    <br>
+    <input id="description" type="text" placeholder="Description" th:field="${product.description}">
+    <br>
+    <input id="stock" type="number" value="50" placeholder="Stock" th:field="${product.stock}">
+    <br>
+    <label for="">Tampilkan produk</label>
+    <input id="status" type="checkbox" th:checked="${product.status}" name="tampilkan" placeholder="Tampilkan" th:field="${product.status}">
+    <br>
+    <select id="category" th:field="*{category}">
+      <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" th:selected="${product.category != null && product.category.id == category.id}"></option>
+    </select>
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Cara kedua save dan insert -->
+  <!-- <form th:action="@{/product/save}" th:object="${product}" method="post"> -->
+    <!-- <input id="id" type="number" placeholder="ID" th:field="${product.id}"> -->
+    <!-- <input id="name" type="text" placeholder="Name" th:field="${product.name}"> -->
+    <!-- <input id="price" type="number" placeholder="Price" th:field="${product.price}"> -->
+    <!-- <input id="description" type="text" placeholder="Description" th:field="${product.description}"> -->
+    <!-- <input id="stock" type="number" value="50" placeholder="Stock" th:field="${product.stock}"> -->
+    <!-- <label for="">Tampilkan produk</label> -->
+    <!-- <input id="status" type="checkbox" th:checked="${product.status}" name="tampilkan" placeholder="Tampilkan" th:field="${product.status}"> -->
+    <!-- <input id="status" type="number" value="1" placeholder="Tampilkan" th:field="${product.status}"> -->
+    <!-- <input id="category" type="number" value="5" th:field="${product.categoryId}"> -->
+    <!-- <button type="submit">Submit</button> -->
+  <!-- </form> -->
+</body>
+</html>
