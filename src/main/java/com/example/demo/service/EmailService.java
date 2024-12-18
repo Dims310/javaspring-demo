@@ -17,11 +17,13 @@ public class EmailService {
     String subject,
     String text
   ) {
+    String timestamp = String.valueOf(System.currentTimeMillis());
+
     try {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setFrom("noreply@toserba.com");
       message.setTo(reciepent);
-      message.setSubject("TOSERBA " + subject);
+      message.setSubject("TOSERBA " + subject + "- " + timestamp);
       message.setText(text);
 
       mailSender.send(message);
