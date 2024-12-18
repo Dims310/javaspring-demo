@@ -34,8 +34,12 @@ public class PasswordResetService {
 
   public Boolean createPasswordResetToken(User user) {
     String token = UUID.randomUUID().toString();
+    
+    PasswordResetToken isResetTokenExist = tokenRepository.findByUserId(user.getId());
 
-    // tokenRepository.deleteByUser(user);
+    if (isResetTokenExist != null) {
+      tokenRepository.deleteById(tokenRepository.findByUserId(user.getId()).getId());
+    }
 
     PasswordResetToken resetToken = new PasswordResetToken();
     resetToken.setUser(user);
@@ -58,7 +62,7 @@ public class PasswordResetService {
     return true;
   }
 
-  public boolean resetPassword(String token, String newPassword) {
+  public Boolean resetPassword(String token, String newPassword) {
     PasswordResetToken resetToken = tokenRepository.findByToken(token);
 
     if (resetToken == null) {
@@ -76,6 +80,16 @@ public class PasswordResetService {
 
     tokenRepository.delete(resetToken);
 
-    return true;
+    Boolean isEmailSent = emailService.sendMessage(
+      user.getPerson().getEmail(),
+      "Password Reset Request",
+      "Password reset successfully to:\n" + newPassword
+    );
+
+    if (isEmailSent) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

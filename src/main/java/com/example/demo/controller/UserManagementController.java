@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.mail.MailSender;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,9 +15,11 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.example.demo.model.PasswordResetToken;
 import com.example.demo.model.Person;
 import com.example.demo.model.User;
 import com.example.demo.model.dto.ChangePasswordDTO;
@@ -169,30 +173,32 @@ public class UserManagementController {
   }
   
   @GetMapping(value = {"/forgotpassword/reset", "/forgotpassword/reset/{token}"})
-  public String getResetPassword(@PathVariable(required = false) String token, Model model) {
-    // Integer userId = tokenRepository.findIdUserByToken(token);
-    // User user = userRepository.findById(userId).get();
+  public String getResetPassword(@PathVariable(required = false) String token, Model model, HttpSession httpSession) {
     ResetPasswordDTO resetPasswordDTO = new ResetPasswordDTO();
     resetPasswordDTO.setToken(token);
-    model.addAttribute("resetPasswordDTO", resetPasswordDTO);
-    return "user/resetpassword";
+
+    PasswordResetToken existingToken = tokenRepository.findByToken(token);
+
+    if (existingToken != null) {
+      model.addAttribute("resetPasswordDTO", resetPasswordDTO);
+      return "user/resetpassword";
+    } else {
+      httpSession.setAttribute("error", "The link can no longer be used");
+      return "redirect:/error";
+    }
   }
 
   @PostMapping("/forgotpassword/resetpassword")
-  public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
-      // User existingUser = userRepository.findById(user.getId()).get();
-
-      // if (user.getPassword() != null && user.getPassword().length() > 0) {
-      //   existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-      // }
-
-      // userRepository.save(existingUser);
-
-      passwordResetService.resetPassword(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
-
-      // emailService.sendMessage(existingUser.getPerson().getEmail(), "Success Reset Password", "Success changes password to:\n" + user.getPassword());
+  public String resetPassword(ResetPasswordDTO resetPasswordDTO, HttpSession httpSession) {
+      Boolean isPasswordReset = passwordResetService.resetPassword(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
       
-      return "redirect:/user/login";
+      if (isPasswordReset) {
+        return "redirect:/user/login";
+      } else {
+        httpSession.setAttribute("error", "Failed to reset password, please try again");
+        return "redirect:/error";
+      }
+
   }
 
   // Mendefinisikan otoritas yang diberikan tiap pengguna dengan memasukkan roles
