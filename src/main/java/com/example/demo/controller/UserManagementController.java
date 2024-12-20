@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -32,8 +31,8 @@ import com.example.demo.repository.PasswordResetTokenRepository;
 import com.example.demo.repository.PersonRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.service.EmailService;
-import com.example.demo.service.PasswordResetService;
+import com.example.demo.utils.EmailService;
+import com.example.demo.utils.PasswordResetService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -190,15 +189,14 @@ public class UserManagementController {
 
   @PostMapping("/forgotpassword/resetpassword")
   public String resetPassword(ResetPasswordDTO resetPasswordDTO, HttpSession httpSession) {
-      Boolean isPasswordReset = passwordResetService.resetPassword(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
-      
-      if (isPasswordReset) {
-        return "redirect:/user/login";
-      } else {
-        httpSession.setAttribute("error", "Failed to reset password, please try again");
-        return "redirect:/error";
-      }
-
+    Boolean isPasswordReset = passwordResetService.resetPassword(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
+    
+    if (isPasswordReset) {
+      return "redirect:/user/login";
+    } else {
+      httpSession.setAttribute("error", "Failed to reset password, please try again");
+      return "redirect:/error";
+    }
   }
 
   // Mendefinisikan otoritas yang diberikan tiap pengguna dengan memasukkan roles
