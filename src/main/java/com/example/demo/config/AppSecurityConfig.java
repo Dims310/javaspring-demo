@@ -24,11 +24,12 @@ public class AppSecurityConfig {
         try {
           auth
             .antMatchers("/").permitAll()
-            .antMatchers("/registration", "/login").permitAll()
-            .antMatchers("/dashboard").authenticated()
+            // .antMatchers("/api/user/registration", "/api/user/auth").permitAll()
+            .antMatchers("/user/registration", "/user/login", "/user/register", "/user/forgotpassword").permitAll()
             .antMatchers("/role/**").hasAuthority("Admin Toko")
             .antMatchers("/admin/**").hasAnyAuthority("Admin Toko")
-            .anyRequest().permitAll()
+            .antMatchers("/dashboard", "/user/edit/{id}").authenticated()
+            .antMatchers("/api/user/{id}", "/api/user/edit/{id}").authenticated()
             .and()
             .formLogin()
             .loginPage("/user/login")
@@ -44,6 +45,15 @@ public class AppSecurityConfig {
         }
       });
     return http.build();
+
+    // http.csrf().disable()
+    //   .cors()
+    //   .and()
+    //   .authorizeHttpRequests()
+    //   .antMatchers("/api/auth/**").permitAll()
+    //   .antMatchers("/api/admin/**").hasRole("Admin Toko")
+    //   .and()
+    //   .userDetailsService(uds)
   }
 
   @Bean
