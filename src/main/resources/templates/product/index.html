@@ -14,7 +14,8 @@
 
   <table id="myTable" class="table table-hover" style="border-collapse: unset;">
     <thead class="table-light">
-      <th>id</th>
+      <th>#</th>
+      <th>ID</th>
       <th>Nama Produk</th>
       <th>Harga</th>
       <th>Kategori</th>
@@ -46,7 +47,7 @@
           <div class="mb-3">
             <label class="form-label" for="description">Deskripsi Produk</label>
             <div>
-              <div id="summernote"></div>
+              <div id="summernote description"></div>
             </div>
           </div>
           <div class="mb-3">
@@ -75,7 +76,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-primary">Tambah</button>
+          <button type="button" class="btn btn-primary">Simpan</button>
         </div>
       </div>
     </div>
@@ -103,6 +104,12 @@
           dataSrc: 'data'
         },
         columns: [
+          { 
+            data: null,
+            render: function(data, type, row, meta) {
+              return meta.row + 1;
+            }
+          },
           { data: 'id' },
           { data: 'name' },
           { 
@@ -134,11 +141,11 @@
         ],
         columnDefs: [
           {
-            targets: [0],
+            targets: [1],
             visible: false,
           },
         ],
-        order: [0, 'asc'],
+        // order: [0, 'asc'],
         layout: {
           topStart: [toolbar, 'pageLength'],
           topEnd: 'search',
@@ -157,12 +164,14 @@
             $('#price').val(json.data.price);
             $('#summernote').val(json.data.description);
             $('#stock').val(json.data.stock);
-            $('#status').val(json.data.status);
+            $('#status').prop("checked", json.data.status);
+
+            $('#exampleModalLabel').html('Edit Produk');
             
             $('#exampleModal').modal('show');
           }
         })
-    });
+      });
     })
   </script>
 </body>
