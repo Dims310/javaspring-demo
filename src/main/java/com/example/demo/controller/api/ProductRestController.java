@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Product;
+import com.example.demo.model.dto.ProductAPIDTO;
+import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.utils.CustomResponse;
 
@@ -17,16 +19,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("api")
 public class ProductRestController {
   private ProductRepository productRepository;
+  private CategoryRepository categoryRepository;
 
-  public ProductRestController(ProductRepository productRepository) {
+  public ProductRestController(ProductRepository productRepository, CategoryRepository categoryRepository) {
     this.productRepository = productRepository;
+    this.categoryRepository = categoryRepository;
   }
 
   @GetMapping("product")
@@ -57,11 +60,49 @@ public class ProductRestController {
   }
 
   @PostMapping("product")
-  public ResponseEntity<Object> postProducts(@RequestBody Product product) {
+  public ResponseEntity<Object> postProducts(@RequestBody ProductAPIDTO productAPIDTO) {
+
+    Product product = new Product();
+    product.setName(productAPIDTO.getName());
+    product.setPrice(productAPIDTO.getPrice());
+    product.setDescription(productAPIDTO.getDescription());
+    product.setStock(productAPIDTO.getStock());
+    product.setStatus(productAPIDTO.getStatus());
+    product.setCategory(categoryRepository.findById(productAPIDTO.getCategoryId()).get());
+
     return CustomResponse.generate(
       HttpStatus.OK,
       "Success adding a product",
       productRepository.save(product)
+    );
+  }
+
+  @PutMapping("product/{id}")
+  public ResponseEntity<Object> updateProducts(@PathVariable(required = true) Integer id, @RequestBody ProductAPIDTO productAPIDTO) {
+    Product targetProduct = productRepository.findById(id).get();
+
+    if (productAPIDTO.getName() != null) {
+      targetProduct.setName(productAPIDTO.getName());
+    }
+
+    if (productAPIDTO.getPrice() != null) {
+      targetProduct.setPrice(productAPIDTO.getPrice());
+    }
+
+    targetProduct.setStatus(productAPIDTO.getStatus());
+
+    if (productAPIDTO.getStock() != null) {
+      targetProduct.setStock(productAPIDTO.getStock());
+    }
+
+    if (productAPIDTO.getCategoryId() != null) {
+      targetProduct.setCategory(categoryRepository.findById(productAPIDTO.getCategoryId()).get());
+    }
+
+    return CustomResponse.generate(
+      HttpStatus.OK,
+      "Success update a product",
+      productRepository.save(targetProduct)
     );
   }
   

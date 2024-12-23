@@ -19,6 +19,7 @@
       <th>Nama Produk</th>
       <th>Harga</th>
       <th>Kategori</th>
+      <th>Tampilkan</th>
       <th>Aksi</th>
     </thead>
   </table>
@@ -35,48 +36,47 @@
           <div class="mb-3">
             <label class="form-label" for="name">Nama Produk</label>
             <div>
-              <input class="form-control" id="name" type="text" placeholder="cont. Toren Air">
+              <input class="form-control" id="name-form" type="text" placeholder="cont. Toren Air">
             </div>
           </div>
           <div class="mb-3">
             <label class="form-label" for="price">Harga</label>
             <div>
-              <input class="form-control" id="price" type="number" placeholder="cont. 759000">
+              <input class="form-control" id="price-form" type="number" placeholder="cont. 759000">
             </div>
           </div>
           <div class="mb-3">
             <label class="form-label" for="description">Deskripsi Produk</label>
             <div>
-              <div id="summernote description"></div>
+              <div class="summernote" id="description-form"></div>
             </div>
           </div>
           <div class="mb-3">
             <label class="form-label" for="stock">Stok Produk</label>
             <div>
-              <input class="form-control" id="stock" type="number" placeholder="cont. 10">
+              <input class="form-control" id="stock-form" type="number" placeholder="cont. 10">
             </div>
           </div>
           <div class="mb-3">
             <label class="form-label" for="category">Kategori Produk</label>
             <div>
-              <select class="form-select" id="category">
-                <option>Rumah Tangga</option>
-                <option>Elektronik</option>
-                <option>Kecantikan</option>
-                <option>Kesehatan</option>
-                <option>Mainan dan Hobi</option>
-                <option></option>
+              <select class="form-select" id="category-form">
+                <option value="1">Rumah Tangga</option>
+                <option value="2">Elektronik</option>
+                <option value="3">Kecantikan</option>
+                <option value="4">Kesehatan</option>
+                <option value="5">Mainan dan Hobi</option>
               </select>
             </div>
           </div>
           <div class="mb-3 form-check">
-            <input class="form-check-input" id="status" type="checkbox" name="tampilkan" placeholder="Tampilkan">
+            <input class="form-check-input" id="status-form" type="checkbox" name="tampilkan" placeholder="Tampilkan">
             <label class="form-check-label" for="status">Tampilkan Produk</label>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-primary">Simpan</button>
+          <button type="button" class="btn btn-primary" id="save-btn-form">Simpan</button>
         </div>
       </div>
     </div>
@@ -85,10 +85,10 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote.min.js"></script>
   <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
-    $(document).ready(function() {
-      
-      $('#summernote').summernote({
+    $(document).ready(function() {     
+      $('.summernote').summernote({
         height: 100,
         focus: true
       });
@@ -98,6 +98,7 @@
         '<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">+ Tambahkan produk</button>'
       );
 
+      // Data produk (DataTables)
       $('#myTable').DataTable({
         ajax: {
           url: '/api/product',
@@ -120,6 +121,19 @@
           },
           { data: 'category.name'},
           { 
+            data: 'status',
+            render: function(data, type, row) {
+              return `
+                <div class="form-check form-switch">
+                  <input class="form-check-input toggle-status" type="checkbox" ${data ? 'checked' : ''} data-id="${row.id}">
+                  <label class="form-check-label">
+                    <small class="toggle-status-text">${data ? 'Ya' : 'Tidak'}</small>
+                  </label>
+                </div>
+              `
+            }
+          },
+          { 
             data: 'id',
             render: function(data, type, row) {
               return `
@@ -130,7 +144,7 @@
                     </a> 
                   </div>
                   <div>
-                    <form action="/product/delete/${data}" method="post">
+                    <form id="delForm" data-id="${data}" method="post">
                       <button id="delBtn" type="submit" class="btn"><i class="bi bi-trash text-danger"></i></button>
                     </form>
                   </div>
@@ -145,7 +159,6 @@
             visible: false,
           },
         ],
-        // order: [0, 'asc'],
         layout: {
           topStart: [toolbar, 'pageLength'],
           topEnd: 'search',
@@ -154,17 +167,90 @@
         }
       });
 
+      // Post data produk
+      $('#save-btn-form').click(() => {
+        let name = $('#name-form').val();
+        let price = $('#price-form').val();
+        let description = $('#description-form').val();
+        let stock = $('#stock-form').val();
+        let status = $('#status-form:checked').val() ? true : false;
+        let categoryId = $('#category-form').val();
+
+        console.log(name, price, description, stock, status, categoryId);
+        
+        $.ajax({
+          headers: { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json' 
+          },
+          type: 'POST',
+          url: 'http://localhost:8080/api/product',
+          data: JSON.stringify({
+            "id": 0,
+            "name": name,
+            "price": price,
+            "description": description,
+            "stock": stock,
+            "status": status,
+            "categoryId": categoryId
+          }),
+          success: function(response) {
+            Swal.fire({
+              title: 'Success add a product',
+              icon: 'success',
+              confirmButtonText: 'Nice!'
+            }).then((response) => {
+              if (response.isConfirmed) {
+                location.reload();
+              }
+            });
+          }
+        })
+      })
+    
+      // Update status (tampilkan produk)
+      $('#myTable').on('change', '.form-check-input', function() {
+        const productId = $(this).data('id');
+        const isChecked = $(this).prop('checked');
+        const statusText = isChecked ? "Ya" : "Tidak";
+
+        $(this).siblings('label').find('.toggle-status-text').text(statusText);
+      
+        $.ajax({
+          headers: { 
+            // 'Accept': 'application/json', 
+            'Content-Type': 'application/json' 
+          },
+          method: 'PUT',
+          url: `http://localhost:8080/api/product/${productId}`,
+          data: JSON.stringify({
+            "id": productId,
+            "status": isChecked,
+          }),
+          success: function(response) {
+            Swal.fire({
+              title: 'Success update product',
+              icon: 'success',
+              confirmButtonText: 'Nice!'
+            });
+          }
+        });
+      });
+
+      // Edit form produk
       $('#myTable').on('click', '#editBtn', function() {
         var productId = $(this).data('id');
         $.ajax({
-          url: 'http://localhost:8080/api/product/' + productId,
+          url: `http://localhost:8080/api/product/${productId}`,
           method: 'GET',
           success: function(json) {
-            $('#name').val(json.data.name);
-            $('#price').val(json.data.price);
-            $('#summernote').val(json.data.description);
-            $('#stock').val(json.data.stock);
-            $('#status').prop("checked", json.data.status);
+            $('#name-form').val(json.data.name);
+            $('#price-form').val(json.data.price);
+            $('#summernote-form').val(json.data.description);
+            $('#stock-form').val(json.data.stock);
+            $('#status-form').prop("checked", json.data.status);
+
+            console.log(json.data);
 
             $('#exampleModalLabel').html('Edit Produk');
             
@@ -172,6 +258,31 @@
           }
         })
       });
+      
+      // Delete produk
+      $('#myTable').on('submit', '#delForm', function(e) {
+        var productId = $(this).data('id');
+        e.preventDefault();
+
+        const formData = $(this).serialize;
+        console.log(formData);
+
+        $.ajax({
+          method: 'DELETE',
+          url: `http://localhost:8080/api/product/${productId}`,
+          data: formData,
+          success: function(response) {
+            Swal.fire({
+              title: 'Success delete product',
+              icon: 'success',
+              confirmButtonText: 'Nice!'
+            }).then((response) => {
+              location.reload();
+            });
+          }
+        })
+        
+      })
     })
   </script>
 </body>
