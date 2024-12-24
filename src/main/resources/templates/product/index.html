@@ -48,7 +48,7 @@
           <div class="mb-3">
             <label class="form-label" for="description">Deskripsi Produk</label>
             <div>
-              <div class="summernote" id="description-form"></div>
+              <textarea class="summernote" id="description-form"></textarea>
             </div>
           </div>
           <div class="mb-3">
@@ -75,7 +75,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-secondary" id="cancel-btn-form" data-bs-dismiss="modal">Batal</button>
           <button type="button" class="btn btn-primary" id="save-btn-form">Simpan</button>
         </div>
       </div>
@@ -167,8 +167,20 @@
         }
       });
 
+      // Reset all input form
+      $('#cancel-btn-form').on('click', function() {
+        $('#save-btn-form').removeAttr('data-id');
+        $('#name-form').val("");
+        $('#price-form').val("");
+        $('#description-form').val("");
+        $('#stock-form').val("");
+        $('#status-form:checked').val("") ? true : false;
+        $('#category-form').val("");
+      });
+
       // Post data produk
-      $('#save-btn-form').click(() => {
+      $('#save-btn-form').on('click', function() {
+        let productId = $(this).attr('data-id');
         let name = $('#name-form').val();
         let price = $('#price-form').val();
         let description = $('#description-form').val();
@@ -176,36 +188,23 @@
         let status = $('#status-form:checked').val() ? true : false;
         let categoryId = $('#category-form').val();
 
-        console.log(name, price, description, stock, status, categoryId);
-        
-        $.ajax({
-          headers: { 
-            'Accept': 'application/json',
-            'Content-Type': 'application/json' 
-          },
-          type: 'POST',
-          url: 'http://localhost:8080/api/product',
-          data: JSON.stringify({
-            "id": 0,
-            "name": name,
-            "price": price,
-            "description": description,
-            "stock": stock,
-            "status": status,
-            "categoryId": categoryId
-          }),
-          success: function(response) {
-            Swal.fire({
-              title: 'Success add a product',
-              icon: 'success',
-              confirmButtonText: 'Nice!'
-            }).then((response) => {
-              if (response.isConfirmed) {
-                location.reload();
-              }
-            });
-          }
-        })
+        console.log(productId, price, description, stock, status, categoryId);
+
+        let productJson = {
+          "id": Number(productId),
+          "name": name,
+          "price": price,
+          "description": description,
+          "stock": stock,
+          "status": status,
+          "categoryId": categoryId
+        };
+          
+        if (productId != undefined) {
+          putEdit(JSON.stringify(productJson));
+        } else {
+          postAdd(JSON.stringify(productJson));
+        }
       })
     
       // Update status (tampilkan produk)
@@ -218,7 +217,6 @@
       
         $.ajax({
           headers: { 
-            // 'Accept': 'application/json', 
             'Content-Type': 'application/json' 
           },
           method: 'PUT',
@@ -240,23 +238,23 @@
       // Edit form produk
       $('#myTable').on('click', '#editBtn', function() {
         var productId = $(this).data('id');
+
         $.ajax({
           url: `http://localhost:8080/api/product/${productId}`,
           method: 'GET',
           success: function(json) {
             $('#name-form').val(json.data.name);
             $('#price-form').val(json.data.price);
-            $('#summernote-form').val(json.data.description);
+            $('.summernote').summernote('code', json.data.description)
             $('#stock-form').val(json.data.stock);
             $('#status-form').prop("checked", json.data.status);
-
-            console.log(json.data);
-
+            
             $('#exampleModalLabel').html('Edit Produk');
+            $('#save-btn-form').attr('data-id', productId);
             
             $('#exampleModal').modal('show');
           }
-        })
+        });
       });
       
       // Delete produk
@@ -283,6 +281,52 @@
         })
         
       })
+    
+      function postAdd(productJson) {
+        $.ajax({
+          headers: { 
+            'Content-Type': 'application/json' 
+          },
+          type: 'POST',
+          url: 'http://localhost:8080/api/product',
+          data: productJson,
+          success: function(response) {
+            Swal.fire({
+              title: 'Success add a product',
+              icon: 'success',
+              confirmButtonText: 'Nice!'
+            }).then((response) => {
+              if (response.isConfirmed) {
+                location.reload();
+              }
+            });
+          }
+        })
+      }
+
+      function putEdit(productJson) {
+        let productIdParse = JSON.parse(productJson).id;
+
+        $.ajax({
+          headers: { 
+            'Content-Type': 'application/json' 
+          },
+          type: 'PUT',
+          url: `http://localhost:8080/api/product/${productIdParse}`,
+          data: productJson,
+          success: function(response) {
+            Swal.fire({
+              title: 'Success update a product',
+              icon: 'success',
+              confirmButtonText: 'Nice!'
+            }).then((response) => {
+              if (response.isConfirmed) {
+                location.reload();
+              }
+            });
+          }
+        })
+      }
     })
   </script>
 </body>
