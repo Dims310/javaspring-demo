@@ -1,11 +1,13 @@
 package com.example.demo.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -24,6 +26,7 @@ public class Product {
   private Integer id;
   private String name;
   private Integer price;
+  private Integer discount;
   private String description;
   private Integer stock;
   private Boolean status;
@@ -32,6 +35,10 @@ public class Product {
   @ManyToOne
   @JoinColumn(name = "tb_m_categories_id", referencedColumnName = "id")
   private Category category;
+
+  @OneToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "tb_assets_id", referencedColumnName = "id")
+  private Asset asset;
 
   // @OneToMany(mappedBy = "product") // Ini opsional
   // @JsonIgnore
