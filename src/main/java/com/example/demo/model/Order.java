@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,9 +20,15 @@ public class Order {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
+
+  @Column(name = "location_logs")
   private String locationLogs;
+
   private String expiredAt;
+
+  @Column(name = "created_at")
   private String createdAt;
+
   private String updatedAt;
 
   @ManyToOne
