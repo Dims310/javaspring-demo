@@ -8,12 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.model.Asset;
 import com.example.demo.model.Product;
 import com.example.demo.model.dto.ProductAPIDTO;
+import com.example.demo.repository.AssetRepository;
 import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.utils.CustomResponse;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,13 +26,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("api")
+@CrossOrigin(origins = "*")
 public class ProductRestController {
   private ProductRepository productRepository;
   private CategoryRepository categoryRepository;
+  private AssetRepository assetRepository;
 
-  public ProductRestController(ProductRepository productRepository, CategoryRepository categoryRepository) {
+  public ProductRestController(ProductRepository productRepository, CategoryRepository categoryRepository, AssetRepository assetRepository) {
     this.productRepository = productRepository;
     this.categoryRepository = categoryRepository;
+    this.assetRepository = assetRepository;
   }
 
   @GetMapping("product")
@@ -69,6 +75,12 @@ public class ProductRestController {
     product.setStock(productAPIDTO.getStock());
     product.setStatus(productAPIDTO.getStatus());
     product.setCategory(categoryRepository.findById(productAPIDTO.getCategoryId()).get());
+
+    Asset asset = new Asset();
+    asset.setPath("https://res.cloudinary.com/dvaqmwb6c/image/upload/f_auto,q_auto/question-sing-flat-icon-vector-illustration-isolated-on-white-background_jmuois");
+    assetRepository.save(asset);
+
+    product.setAsset(assetRepository.findById(asset.getId()).get());
 
     return CustomResponse.generate(
       HttpStatus.OK,
